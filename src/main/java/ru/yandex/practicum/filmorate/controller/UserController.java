@@ -2,10 +2,12 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -18,7 +20,7 @@ public class UserController {
     private Map<Integer, User> users = new HashMap<>();
 
     @GetMapping
-    public String homeFilms() { return users.values().toString(); }
+    public Collection<User> homeUsers() { return users.values(); }
 
     @PostMapping
     public User addUser(@RequestBody User user) {
@@ -42,7 +44,7 @@ public class UserController {
     @PutMapping
     public User updateUser(@RequestBody User user) {
         if(user.getId() >= uniqueId || user.getId() <= 0) {
-            throw new ValidationException("Вы пытаетесь изменить несуществующего пользователя");
+            throw new NotFoundException("Вы пытаетесь изменить несуществующего пользователя");
         }
         if(!user.getEmail().contains("@") || user.getEmail().isEmpty() || user.getEmail().isBlank()) {
             throw new ValidationException("Ошибка при вводе электронной почты");
