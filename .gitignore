@@ -1,4 +1,18 @@
+<<<<<<< HEAD
 HELP.md
+=======
+*.class
+*.log
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+out/
+>>>>>>> df3bf912078d9f13d39818204a583cc6b9482a2c
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -31,3 +45,9 @@ build/
 
 ### VS Code ###
 .vscode/
+<<<<<<< HEAD
+=======
+
+*.db
+db/*
+>>>>>>> df3bf912078d9f13d39818204a583cc6b9482a2c
