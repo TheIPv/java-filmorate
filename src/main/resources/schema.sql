@@ -1,52 +1,52 @@
 CREATE TABLE film_genre (
-    film_id  INTEGER NOT NULL,
-    genre_id INTEGER NOT NULL
+                            film_id  INTEGER NOT NULL,
+                            genre_id INTEGER NOT NULL
 );
 
 CREATE TABLE films (
-    film_id      INTEGER NOT NULL,
-    name         VARCHAR2(50) NOT NULL,
-    description  VARCHAR2(200),
-    release_date DATE NOT NULL,
-    duration     INTEGER NOT NULL,
-    mpa_id       INTEGER NOT NULL
+                       film_id      INTEGER NOT NULL,
+                       name         VARCHAR2(50) NOT NULL,
+                       description  VARCHAR2(200),
+                       release_date DATE NOT NULL,
+                       duration     INTEGER NOT NULL,
+                       mpa_id       INTEGER NOT NULL
 );
 
 ALTER TABLE films ADD CONSTRAINT films_pk PRIMARY KEY ( film_id );
 
 CREATE TABLE friendships (
-    user_id   INTEGER NOT NULL,
-    friend_id INTEGER NOT NULL
+                             user_id   INTEGER NOT NULL,
+                             friend_id INTEGER NOT NULL
 );
 
 ALTER TABLE friendships ADD CONSTRAINT friendships_pk PRIMARY KEY ( user_id,
                                                                     friend_id );
 
 CREATE TABLE genre (
-    genre_id INTEGER NOT NULL,
-    name     VARCHAR2(50) NOT NULL
+                       genre_id INTEGER NOT NULL,
+                       name     VARCHAR2(50) NOT NULL
 );
 
 ALTER TABLE genre ADD CONSTRAINT genres_pk PRIMARY KEY ( genre_id );
 
 CREATE TABLE likes (
-    film_id INTEGER NOT NULL,
-    user_id INTEGER NOT NULL
+                       film_id INTEGER NOT NULL,
+                       user_id INTEGER NOT NULL
 );
 
 CREATE TABLE mpa_rating (
-    mpa_id INTEGER NOT NULL,
-    name   VARCHAR2(50) NOT NULL
+                            mpa_id INTEGER NOT NULL,
+                            name   VARCHAR2(50) NOT NULL
 );
 
 ALTER TABLE mpa_rating ADD CONSTRAINT mpa_rating_pk PRIMARY KEY ( mpa_id );
 
 CREATE TABLE users (
-    user_id  INTEGER NOT NULL,
-    email    VARCHAR2(50) NOT NULL,
-    login    VARCHAR2(50) NOT NULL,
-    name     VARCHAR2(50),
-    birthday DATE NOT NULL
+                       user_id  INTEGER NOT NULL,
+                       email    VARCHAR2(50) NOT NULL,
+                       login    VARCHAR2(50) NOT NULL,
+                       name     VARCHAR2(50),
+                       birthday DATE NOT NULL
 );
 
 ALTER TABLE users ADD CONSTRAINT users_pk PRIMARY KEY ( user_id );
