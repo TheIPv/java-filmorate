@@ -1,6 +1,10 @@
-package ru.yandex.practicum.filmorate.storage.mpa;
+package ru.yandex.practicum.filmorate.exception;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-public class MpaNotFoundException extends Throwable {
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class MpaNotFoundException extends RuntimeException {
     public MpaNotFoundException(String s) {
+        super(s);
     }
 }

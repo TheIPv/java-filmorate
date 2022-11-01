@@ -1,17 +1,18 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
-import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
+import ru.yandex.practicum.filmorate.exception.MpaNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.Map;
 
 public interface FilmStorage {
 
-    Collection<Film> homeFilms();
-    Film addFilm(Film film);
-    Film updateFilm(Film film);
-    Map<Integer, Film> getFilms();
+    Collection<Film> homeFilms() ;
+    Film addFilm(Film film) throws MpaNotFoundException, GenreNotFoundException;
+    Film updateFilm(Film film) throws MpaNotFoundException, GenreNotFoundException;
+    Map<Long, Film> getFilms();
 
+    Film getFilmById(Long filmId) throws MpaNotFoundException;
 }

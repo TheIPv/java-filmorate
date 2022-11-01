@@ -1,6 +1,10 @@
-package ru.yandex.practicum.filmorate.storage.genre;
+package ru.yandex.practicum.filmorate.exception;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-public class GenreNotFoundException extends Throwable {
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class GenreNotFoundException extends RuntimeException {
     public GenreNotFoundException(String s) {
+        super(s);
     }
 }
