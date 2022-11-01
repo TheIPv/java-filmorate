@@ -1,13 +1,16 @@
 package ru.yandex.practicum.filmorate.storage.genre;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
+import ru.yandex.practicum.filmorate.exception.MpaNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.List;
 
@@ -31,17 +34,17 @@ public class GenreDbStorage implements GenreStorage{
         if (genreId == null) {
             throw new ValidationException("Передан пустой аргумент!");
         }
-        Genre genre;
-        SqlRowSet genreRows = jdbcTemplate.queryForRowSet("SELECT * FROM genre WHERE genre_id = ?", genreId);
-        if (genreRows.first()) {
-            genre = new Genre(
-                    genreRows.getInt("genre_id"),
-                    genreRows.getString("name")
-            );
-        } else {
-            throw new GenreNotFoundException("Жанр с ID=" + genreId + " не найден!");
+        try {
+            Genre genre = jdbcTemplate.queryForObject("SELECT * FROM genre WHERE genre_id = ?",
+                    new Object[]{genreId}, (rs, rowNum) ->
+                            new Genre(
+                                    rs.getInt("genre_id"),
+                                    rs.getString("name")
+                            ));
+            return genre;
+        } catch (EmptyResultDataAccessException e) {
+            throw new GenreNotFoundException("Рейтинг с ID=" + genreId + " не найден!");
         }
-        return genre;
     }
     @Override
     public void delete(Film film) {

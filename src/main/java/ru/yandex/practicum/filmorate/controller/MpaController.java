@@ -17,13 +17,17 @@ import java.util.Collection;
 @Slf4j
 public class MpaController {
     private MpaRatingService mpaService;
+
     @Autowired
     public MpaController(MpaRatingService mpaService) {
         this.mpaService = mpaService;
     }
+
     @GetMapping
     public Collection<Mpa> homeMpa() {
-        return mpaService.getAllMpa(); }
+        return mpaService.getAllMpa();
+    }
+
     @GetMapping("/{id}")
     public Mpa getMpa(@PathVariable Integer id) throws MpaNotFoundException {
         return mpaService.getMpaById(id);

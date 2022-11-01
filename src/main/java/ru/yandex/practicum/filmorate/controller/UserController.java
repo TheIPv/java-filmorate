@@ -29,18 +29,22 @@ public class UserController {
         this.userService = userService;
         this.friendStorage = friendStorage;
     }
+
     @GetMapping
-    public Collection<User> homeUsers() { return userStorage.homeUsers(); }
+    public Collection<User> homeUsers() {
+        return userStorage.homeUsers();
+    }
 
     @PostMapping
     public User addUser(@RequestBody User user) {
 
-      return userStorage.addUser(user);
+        return userStorage.addUser(user);
     }
+
     @PutMapping
     public User updateUser(@RequestBody User user) {
-        if(user.getName().isEmpty()) user.setName(user.getLogin());
-       return userStorage.updateUser(user);
+        if (user.getName().isEmpty()) user.setName(user.getLogin());
+        return userStorage.updateUser(user);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -53,15 +57,17 @@ public class UserController {
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public User removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
-        if(userStorage.getUserById(id) == null || userStorage.getUserById(friendId) == null ) throw new NotFoundException("Пользователь не найден");
+        if (userStorage.getUserById(id) == null || userStorage.getUserById(friendId) == null)
+            throw new NotFoundException("Пользователь не найден");
         return userService.removeFriend(id, friendId);
     }
 
     @GetMapping("/{id}")
     public User getUser(@PathVariable Long id) {
-        if(userStorage.getUserById(id) != null) return userStorage.getUserById(id);
+        if (userStorage.getUserById(id) != null) return userStorage.getUserById(id);
         else throw new NotFoundException("Не найдено");
     }
+
     @GetMapping("/{id}/friends")
     public List<User> getUserFriends(@PathVariable Long id) {
         return friendStorage.getFriends(id);
@@ -70,7 +76,7 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{otherId}")
     public Set<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) throws NotFoundException {
         Set<User> commonFriends = new HashSet<>();
-        if(userStorage.getUserById(id) != null && friendStorage.getFriends(id) != null) {
+        if (userStorage.getUserById(id) != null && friendStorage.getFriends(id) != null) {
             for (User friendId : friendStorage.getFriends(id)) {
                 if (friendStorage.getFriends(otherId).contains(friendId)) commonFriends.add(friendId);
             }

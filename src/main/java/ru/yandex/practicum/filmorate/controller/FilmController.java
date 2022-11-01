@@ -24,7 +24,7 @@ public class FilmController {
     private final LikeStorage likeStorage;
 
     @Autowired
-    public FilmController(FilmStorage filmStorage,  FilmService filmService, LikeStorage likeStorage) {
+    public FilmController(FilmStorage filmStorage, FilmService filmService, LikeStorage likeStorage) {
         this.filmStorage = filmStorage;
         this.filmService = filmService;
         this.likeStorage = likeStorage;
@@ -34,12 +34,14 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> homeFilms() {
-        return filmStorage.homeFilms(); }
+        return filmStorage.homeFilms();
+    }
 
     @PostMapping
     public Film addFilm(@RequestBody Film film) throws MpaNotFoundException, GenreNotFoundException {
         return filmStorage.addFilm(film);
     }
+
     @PutMapping
     public Film updateFilm(@RequestBody Film film) throws MpaNotFoundException, GenreNotFoundException {
         return filmStorage.updateFilm(film);
@@ -47,20 +49,21 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public Film getFilm(@PathVariable Long id) throws MpaNotFoundException {
-        if(filmStorage.getFilmById(id) != null) return filmStorage.getFilmById(id);
-        else throw new NotFoundException("Фильм не найден");
+        if (filmStorage.getFilmById(id) != null) return filmStorage.getFilmById(id);
+        else throw new NotFoundException("The movie was not found");
     }
 
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable Long id, @PathVariable Long userId) {
-        if(id != null && userId != null && !likeStorage.getLikes(id).contains(userId)) likeStorage.addLike(id, userId);
-        else throw new NotFoundException("Фильм/пользователь не найдены или лайк постановлен");
+        if (id != null && userId != null && !likeStorage.getLikes(id).contains(userId)) likeStorage.addLike(id, userId);
+        else throw new NotFoundException("The movie/user was not found or like has already been set");
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLike(@PathVariable Long id, @PathVariable Long userId) {
-        if(id != null && userId != null && likeStorage.getLikes(id).contains(userId)) likeStorage.deleteLike(id, userId);
-        else throw new NotFoundException("Фильм/пользователь/лайк не найдены");
+        if (id != null && userId != null && likeStorage.getLikes(id).contains(userId))
+            likeStorage.deleteLike(id, userId);
+        else throw new NotFoundException("The movie/user/like was not found");
     }
 
     @GetMapping("/popular")

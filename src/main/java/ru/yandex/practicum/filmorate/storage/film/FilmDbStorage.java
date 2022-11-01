@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
 import ru.yandex.practicum.filmorate.exception.MpaNotFoundException;
@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.GenreService;
 import ru.yandex.practicum.filmorate.service.MpaRatingService;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
@@ -22,7 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component("filmDbStorage")
-public class FilmDbStorage implements FilmStorage{
+public class FilmDbStorage implements FilmStorage {
     private final static LocalDate EARLIEST_DATE = LocalDate.of(1895, Month.DECEMBER, 28);
     private final JdbcTemplate jdbcTemplate;
     private long uniqueId = 1;
@@ -61,26 +60,27 @@ public class FilmDbStorage implements FilmStorage{
 
     @Override
     public Film addFilm(Film film) throws MpaNotFoundException, GenreNotFoundException {
-        if(film.getReleaseDate().isBefore(EARLIEST_DATE)) {
+        if (film.getReleaseDate().isBefore(EARLIEST_DATE)) {
             throw new ValidationException("Дата выхода фильма не может быть раньше, чем "
                     + EARLIEST_DATE.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
             );
         }
-        if(!Objects.isNull(film.getDescription())) {
+        if (!Objects.isNull(film.getDescription())) {
             if (film.getDescription().length() > 200) {
                 throw new ValidationException("Описание фильма не может превышать 200 символов");
             }
         }
-        if(film.getName().equals("")) {
+        if (film.getName().equals("")) {
             throw new ValidationException("Название фильма не может быть пустым");
         }
-        if(film.getDuration() < 0) {
+        if (film.getDuration() < 0) {
             throw new ValidationException("Продолжительность меньше нуля");
         }
-        if(film.getMpa() == null) {
+        if (film.getMpa() == null) {
             throw new ValidationException("У фильма должен быть рейтинг");
         }
-        film.setId(uniqueId); ++uniqueId;
+        film.setId(uniqueId);
+        ++uniqueId;
         film.setMpa(mpaService.getMpaById(film.getMpa().getId()));
         jdbcTemplate.update("INSERT INTO FILMS(FILM_ID, NAME, DESCRIPTION, RELEASE_DATE, DURATION, MPA_ID) VALUES(?,?,?,?,?,?)",
                 film.getId(),
@@ -103,23 +103,23 @@ public class FilmDbStorage implements FilmStorage{
         if (film == null) {
             throw new ValidationException("Передан пустой аргумент!");
         }
-        if(film.getReleaseDate().isBefore(EARLIEST_DATE)) {
+        if (film.getReleaseDate().isBefore(EARLIEST_DATE)) {
             throw new ValidationException("Дата выхода фильма не может быть раньше, чем "
                     + EARLIEST_DATE.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
             );
         }
-        if(!Objects.isNull(film.getDescription())) {
+        if (!Objects.isNull(film.getDescription())) {
             if (film.getDescription().length() > 200) {
                 throw new ValidationException("Описание фильма не может превышать 200 символов");
             }
         }
-        if(film.getMpa() == null) {
+        if (film.getMpa() == null) {
             throw new ValidationException("У фильма должен быть рейтинг");
         }
-        if(film.getName().equals("")) {
+        if (film.getName().isEmpty()) {
             throw new ValidationException("Название фильма не может быть пустым");
         }
-        if(film.getDuration() < 0) {
+        if (film.getDuration() < 0) {
             throw new ValidationException("Продолжительность меньше нуля");
         }
         String sqlQuery = "UPDATE films SET " +
@@ -159,26 +159,22 @@ public class FilmDbStorage implements FilmStorage{
         if (filmId == null) {
             throw new ValidationException("Передан пустой аргумент!");
         }
-        Film film;
-        SqlRowSet filmRows = jdbcTemplate.queryForRowSet("SELECT * FROM films WHERE film_id = ?", filmId);
-        if (filmRows.first()) {
-            Mpa mpa = mpaService.getMpaById(filmRows.getInt("mpa_id"));
-            Set<Genre> genres = genreService.getFilmGenres(filmId);
-            film = new Film(
-                    filmRows.getLong("film_id"),
-                    filmRows.getString("name"),
-                    filmRows.getString("description"),
-                    filmRows.getDate("release_date").toLocalDate(),
-                    filmRows.getInt("duration"),
-                    new HashSet<>(likeStorage.getLikes(filmRows.getLong("mpa_id"))),
-                    mpa,
-                    genres);
-        } else {
+        try {
+            Film film = jdbcTemplate.queryForObject("SELECT * FROM films WHERE film_id = ?",
+                    new Object[]{filmId}, (rs, rowNum) ->
+                            new Film(
+                                    rs.getLong("film_id"),
+                                    rs.getString("name"),
+                                    rs.getString("description"),
+                                    rs.getDate("release_date").toLocalDate(),
+                                    rs.getInt("duration"),
+                                    new HashSet<>(likeStorage.getLikes(rs.getLong("mpa_id"))),
+                                    mpaService.getMpaById(rs.getInt("mpa_id")),
+                                    genreService.getFilmGenres(rs.getLong("film_id"))
+                            ));
+            return film;
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Фильм с ID=" + filmId + " не найден!");
         }
-        if (film.getGenres().isEmpty()) {
-            film.setGenres(null);
-        }
-        return film;
     }
 }
