@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
@@ -20,65 +21,66 @@ import java.util.Set;
 public class UserController {
     private final UserStorage userStorage;
     private final UserService userService;
+    private final FriendStorage friendStorage;
 
     @Autowired
-    public UserController(UserStorage userStorage, UserService userService) {
+    public UserController(UserStorage userStorage, UserService userService, FriendStorage friendStorage) {
         this.userStorage = userStorage;
         this.userService = userService;
+        this.friendStorage = friendStorage;
     }
+
     @GetMapping
-    public Collection<User> homeUsers() { return userStorage.homeUsers(); }
+    public Collection<User> homeUsers() {
+        return userStorage.homeUsers();
+    }
 
     @PostMapping
     public User addUser(@RequestBody User user) {
 
-      return userStorage.addUser(user);
+        return userStorage.addUser(user);
     }
+
     @PutMapping
     public User updateUser(@RequestBody User user) {
-        if(user.getName().isEmpty()) user.setName(user.getLogin());
-       return userStorage.updateUser(user);
+        if (user.getName().isEmpty()) user.setName(user.getLogin());
+        return userStorage.updateUser(user);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable int id, @PathVariable int friendId) {
-        if (userStorage.getUsers().get(id) != null && userStorage.getUsers().get(friendId) != null) {
+    public User addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        if (userStorage.getUserById(id) != null && userStorage.getUserById(friendId) != null) {
             return userService.addFriend(id, friendId);
-
         }
         throw new NotFoundException("Пользователь не найден");
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User removeFriend(@PathVariable int id, @PathVariable int friendId) {
-        if(userStorage.getUsers().get(id) == null || userStorage.getUsers().get(friendId) == null ) throw new NotFoundException("Пользователь не найден");
+    public User removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        if (userStorage.getUserById(id) == null || userStorage.getUserById(friendId) == null)
+            throw new NotFoundException("Пользователь не найден");
         return userService.removeFriend(id, friendId);
     }
 
     @GetMapping("/{id}")
-    public User getUser(@PathVariable int id) {
-        if(userStorage.getUsers().containsKey(id)) return userStorage.getUsers().get(id);
-        else throw new NotFoundException("Пользователь не найден");
+    public User getUser(@PathVariable Long id) {
+        if (userStorage.getUserById(id) != null) return userStorage.getUserById(id);
+        else throw new NotFoundException("Не найдено");
     }
+
     @GetMapping("/{id}/friends")
-    public Set<User> getUserFriends(@PathVariable int id) {
-        Set<User> userFriends = new HashSet<>();
-        for (int friendId : userStorage.getUsers().get(id).getFriends()) {
-            userFriends.add(userStorage.getUsers().get(friendId));
-        }
-        return userFriends;
+    public List<User> getUserFriends(@PathVariable Long id) {
+        return friendStorage.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Set<User> getCommonFriends(@PathVariable int id, @PathVariable int otherId) throws NotFoundException {
+    public Set<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) throws NotFoundException {
         Set<User> commonFriends = new HashSet<>();
-        if(userStorage.getUsers().get(id) != null && userStorage.getUsers().get(id).getFriends() != null) {
-            for (int friendId : userStorage.getUsers().get(id).getFriends()) {
-                if (userStorage.getUsers().get(otherId).getFriends().contains(friendId)) commonFriends.add(userStorage.getUsers().get(friendId));
+        if (userStorage.getUserById(id) != null && friendStorage.getFriends(id) != null) {
+            for (User friendId : friendStorage.getFriends(id)) {
+                if (friendStorage.getFriends(otherId).contains(friendId)) commonFriends.add(friendId);
             }
         }
-
-
         return commonFriends;
     }
 
