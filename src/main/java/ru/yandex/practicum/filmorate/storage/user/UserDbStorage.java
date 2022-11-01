@@ -107,6 +107,9 @@ public class UserDbStorage implements UserStorage {
         }
         return user;
     }
+    public void zeroUniqueId() {
+        uniqueId = 1;
+    }
     @Override
     public Map<Long, User> getUsers() {
         return null;
